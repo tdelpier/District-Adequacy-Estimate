@@ -54,17 +54,17 @@ pk <- read.csv("2021_PK.csv")
     # High_need_pov <- tt_import_census_school("B17020", year = 2019)
     # write.csv(High_need_pov, "High_need_pov.csv")
 
-High_need_pov <- 
-  read_csv("High_need_pov.csv") %>% 
-  filter(variable %in% c("B17020_003", "B17020_004", "B17020_005"),
-         GEOID != "2699999") %>% 
-  pivot_wider(id_cols = "GEOID", values_from = "estimate", names_from = "variable") %>% 
-  mutate(acs.poverty.5_17 = (B17020_003 / 3) + B17020_004 + B17020_005,
-         nces.code = as.character(GEOID)) %>% 
-  left_join(district_id, by = "nces.code") %>% 
-  select(dcode, acs.poverty.5_17) %>% 
-  mutate(dcode = as.numeric(dcode),
-         dcode = ifelse(dcode == 82010, 82015, dcode)) # recoding Detroit
+# High_need_pov <- 
+#   read_csv("High_need_pov.csv") %>% 
+#   filter(variable %in% c("B17020_003", "B17020_004", "B17020_005"),
+#          GEOID != "2699999") %>% 
+#   pivot_wider(id_cols = "GEOID", values_from = "estimate", names_from = "variable") %>% 
+#   mutate(acs.poverty.5_17 = (B17020_003 / 3) + B17020_004 + B17020_005,
+#          nces.code = as.character(GEOID)) %>% 
+#   left_join(district_id, by = "nces.code") %>% 
+#   select(dcode, acs.poverty.5_17) %>% 
+#   mutate(dcode = as.numeric(dcode),
+#          dcode = ifelse(dcode == 82010, 82015, dcode)) # recoding Detroit
   
 
 
@@ -81,7 +81,7 @@ raw_enroll <-
   rename_with(~str_remove(.,".enrollment")) %>% 
   rename_with(~str_replace(., "grade.", "stu.grade.")) %>% 
   rename(stu.grade.k = kindergarten) %>% 
-  mutate(stu.total =
+  mutate(stu.total.k12 =
            stu.grade.k +
            stu.grade.1 +
            stu.grade.2 +
@@ -118,6 +118,6 @@ raw_enroll <-
   select(dcode, icode, dname, entity.type, locale.name, starts_with("stu."), Age_0_5, Age_3_4)
 
 
-rm(SE_enrollment, EL_enrollment, student_enrollment, ID_crosswalk, pk)
+rm(SE_enrollment, EL_enrollment, student_enrollment, pk)
 
 

@@ -9,7 +9,7 @@ Adq_Data <-
   left_join(FID_Rev %>% select(-icode), by = c("dcode" = "dnum")) %>%
   left_join(ISD_Rev %>% select(-icode), by = c("dcode" = "dnum")) %>% 
   left_join(cydata %>% select(-icode, -dname, -isdpupils,), by = c("dcode" = "dnum")) %>% 
-  
+  left_join(gsrp, by = "icode") %>% 
   mutate(across(where(is.numeric), ~replace_na(.x, 0)),
          refdist = as.numeric(refdist),
          refdist = ifelse(is.na(refdist), dcode, refdist)) %>% 
@@ -17,15 +17,15 @@ Adq_Data <-
   mutate(refdist.tot.need.ed = sum(stu.need.ed)) %>% 
   ungroup() %>% 
   mutate(refdist.need.ed.pct = stu.need.ed / refdist.tot.need.ed) %>% 
-  left_join(High_need_pov, by = c("refdist" = "dcode")) %>% 
-  mutate(stu.need.high.pov = refdist.need.ed.pct * acs.poverty.5_17,
-         stu.need.high.pov = ifelse(stu.need.high.pov > stu.need.ed, stu.need.ed,stu.need.high.pov)) %>% 
+  # left_join(High_need_pov, by = c("refdist" = "dcode")) %>% 
+  # mutate(stu.need.high.pov = refdist.need.ed.pct * acs.poverty.5_17,
+  #        stu.need.high.pov = ifelse(stu.need.high.pov > stu.need.ed, stu.need.ed,stu.need.high.pov)) %>% 
   
-  mutate(adq.cost.base = stu.total * base.foundation,
+  mutate(adq.cost.base = stu.total.k12 * base.foundation,
          
          adq.cost.ed = stu.need.ed * base.foundation * 0.35,
          
-         adq.cost.high.pov = stu.need.high.pov * base.foundation * 0.15,
+         # adq.cost.high.pov = stu.need.high.pov * base.foundation * 0.15,
          
          
          adq.cost.el.1 = (stu.need.el.wida.0_1.9 + stu.need.el.wida.2_2.9) * base.foundation * 0.7,
@@ -43,23 +43,41 @@ Adq_Data <-
          adq.cost.se.sev = stu.need.se.sev * base.foundation * 3.0,
          adq.cost.total.se = adq.cost.se.mild + adq.cost.se.mod + adq.cost.se.sev,
          
-         adq.cost.pk = Age_3_4 * 0.8 * base.foundation * 1.45, 
+         # PK
+         stu.gsrp = isd.stu.gsrp * dist.isd.pupil.pct, 
          
-         adq.cost.total = adq.cost.base + adq.cost.ed + adq.cost.high.pov + adq.cost.total.el + adq.cost.total.se,
+         stu.total = stu.total.k12 + stu.gsrp,
          
-         adq.rev = adq.cost.total + add.cost.total,
+         Age_3_4_not.in.gsrp = Age_3_4 - stu.gsrp, 
          
-         adq.rev.pp = adq.rev / stu.total,
+         adq.cost.pk.current = stu.gsrp * base.foundation * 1.45, 
+           
+         adq.cost.pk.expansion = Age_3_4_not.in.gsrp * 0.8 * base.foundation * 1.45, 
          
-         actual.rev = fid.r.total + dist.isd.ge.rev + dist.isd.se.rev,
+         adq.cost.pk = adq.cost.pk.current + adq.cost.pk.expansion, 
          
-         actual.rev.pp = actual.rev / stu.total,
          
-         adq.gap = actual.rev - adq.rev,
+         # Adequacy Total 
          
-         adq.gap.pp = adq.gap / stu.total,
+         adq.cost.total            = adq.cost.base + adq.cost.ed + adq.cost.total.el + adq.cost.total.se + adq.cost.pk,
+         adq.cost.total.pk.current = adq.cost.total - adq.cost.pk.expansion, 
          
-         adq.pct = actual.rev / adq.rev
+         adq.rev                   = adq.cost.total + add.cost.total,
+         adq.rev.pk.current        = adq.cost.total.pk.current + add.cost.total,
+         
+         adq.rev.pp                = adq.rev / stu.total,
+         adq.rev.pp.pk.current     = adq.rev.pk.current / stu.total, 
+         
+         actual.rev                = fid.r.total + dist.isd.ge.rev + dist.isd.se.rev,
+         actual.rev.pp             = actual.rev / stu.total,
+         
+         adq.gap                   = actual.rev - adq.rev,
+         adq.gap.pp                = adq.gap / stu.total,
+         adq.gap.pk.current        = actual.rev - adq.rev.pk.current,
+         adq.gap.pp.pk.current     = adq.gap.pk.current / stu.total,
+         
+         adq.pct                   = actual.rev / adq.rev,
+         adq.pct.pk.current        = actual.rev/ adq.rev.pk.current
          
          ) %>% 
   
@@ -80,6 +98,6 @@ Adq_Data <-
 
 
 
-Adq_Data %>% write_csv(here("Adequacy Estimates/District Adequacy Estimate/2021_Data/2021_Adq_Data.csv"))
+Adq_Data %>% write_csv(here("Adequacy Estimates/District-Adequacy-Estimate/2021_Adq_Data.csv"))
 
 

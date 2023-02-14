@@ -8,7 +8,7 @@ fiscal.year <- 2021
 base.foundation <- 10413
 
 do <- function(r.file){
-  source(here("Adequacy Estimates/District Adequacy Estimate/2021_Data/",
+  source(here("Adequacy Estimates/District-Adequacy-Estimate",
               paste0(r.file)))
 }
 
@@ -27,7 +27,6 @@ do("AdqEst_Import_CY.R")
 do("AdqEst_DataWork_Add-Cost.R")
 do("AdqEst_DataWork_ISD-Rev.R")
 do("AdqEst_DataWork_Adq-Est.R")
-do("AdqEst_DataWork_PK.R")
 
 
 

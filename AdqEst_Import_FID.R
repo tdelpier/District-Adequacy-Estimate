@@ -42,13 +42,14 @@ ISD_SE_Rev <-
 # GSRP funding
 gsrp <- 
   tt_import_cy_allow(8) %>% 
-  filter(icd %in% c(119, 238, 240, 255, 596),
+  filter(icd == 238,
          FY == 2021) %>% 
   mutate(icode = as.numeric(str_sub(dcode, 1,2))) %>% 
   select(icode, amount) %>% 
   group_by(icode) %>% 
   summarise(amount.gsrp = sum(amount)) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(isd.stu.gsrp = amount.gsrp / 7250)
 
 
 
@@ -61,10 +62,13 @@ ISD_GE_Rev <-
   group_by(icode) %>% 
   summarise(ISD_GE_Rev = sum(amount)) %>% 
   ungroup() %>% 
-  mutate(icode = as.numeric(icode)) %>% 
-  full_join(gsrp) %>% 
-  mutate(amount.gsrp = ifelse(is.na(amount.gsrp), 0, amount.gsrp),
-         ISD_GE_Rev = ISD_GE_Rev - amount.gsrp) %>% 
-  select(-amount.gsrp)
-  
+  mutate(icode = as.numeric(icode))
+
+  # full_join(gsrp) %>% 
+  # mutate(amount.gsrp = ifelse(is.na(amount.gsrp), 0, amount.gsrp),
+  #        # ISD_GE_Rev = ISD_GE_Rev - amount.gsrp
+  #         # in an earlier iteration I was removing GSRP from revenue
+  #        ) %>% 
+  # select(-amount.gsrp)
+  # 
   
