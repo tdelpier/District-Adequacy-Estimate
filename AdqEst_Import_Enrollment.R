@@ -54,17 +54,17 @@ pk <- read.csv("2021_PK.csv")
     # High_need_pov <- tt_import_census_school("B17020", year = 2019)
     # write.csv(High_need_pov, "High_need_pov.csv")
 
-# High_need_pov <- 
-#   read_csv("High_need_pov.csv") %>% 
-#   filter(variable %in% c("B17020_003", "B17020_004", "B17020_005"),
-#          GEOID != "2699999") %>% 
-#   pivot_wider(id_cols = "GEOID", values_from = "estimate", names_from = "variable") %>% 
-#   mutate(acs.poverty.5_17 = (B17020_003 / 3) + B17020_004 + B17020_005,
-#          nces.code = as.character(GEOID)) %>% 
-#   left_join(district_id, by = "nces.code") %>% 
-#   select(dcode, acs.poverty.5_17) %>% 
-#   mutate(dcode = as.numeric(dcode),
-#          dcode = ifelse(dcode == 82010, 82015, dcode)) # recoding Detroit
+High_need_pov <-
+  read_csv("High_need_pov.csv") %>%
+  filter(variable %in% c("B17020_003", "B17020_004", "B17020_005"),
+         GEOID != "2699999") %>%
+  pivot_wider(id_cols = "GEOID", values_from = "estimate", names_from = "variable") %>%
+  mutate(acs.poverty.5_17 = (B17020_003 / 3) + B17020_004 + B17020_005,
+         nces.code = as.character(GEOID)) %>%
+  left_join(district_id, by = "nces.code") %>%
+  select(dcode, acs.poverty.5_17) %>%
+  mutate(dcode = as.numeric(dcode),
+         dcode = ifelse(dcode == 82010, 82015, dcode)) # recoding Detroit
   
 
 
@@ -77,10 +77,12 @@ raw_enroll <-
   left_join(SE_enrollment, by = "dcode") %>% 
   left_join(EL_enrollment, by = "dcode") %>% 
   left_join(pk, by = "dcode") %>% 
-  # left_join(High_need_pov, by = "dcode") %>% 
+  left_join(High_need_pov, by = "dcode") %>%
   rename_with(~str_remove(.,".enrollment")) %>% 
   rename_with(~str_replace(., "grade.", "stu.grade.")) %>% 
   rename(stu.grade.k = kindergarten) %>% 
+  
+  
   mutate(stu.total.k12 =
            stu.grade.k +
            stu.grade.1 +
@@ -94,7 +96,9 @@ raw_enroll <-
            stu.grade.9 +
            stu.grade.10 +
            stu.grade.11 +
-           stu.grade.12) %>% 
+           stu.grade.12,
+         stu.grade.pk = stu.grade.k,
+         stu.total.pk12 = stu.total.k12 + stu.grade.pk) %>% 
 
   rename(stu.sex.male = male, 
          stu.sex.female = female,

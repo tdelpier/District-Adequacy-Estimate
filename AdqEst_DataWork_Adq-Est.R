@@ -25,15 +25,15 @@ Adq_Data <-
   
   mutate(dist.isd.Age_3_4.pct = Age_3_4 / isd.Age_3_4) %>% 
   
-  # left_join(High_need_pov, by = c("refdist" = "dcode")) %>% 
-  # mutate(stu.need.high.pov = refdist.need.ed.pct * acs.poverty.5_17,
-  #        stu.need.high.pov = ifelse(stu.need.high.pov > stu.need.ed, stu.need.ed,stu.need.high.pov)) %>% 
+  left_join(High_need_pov, by = c("refdist" = "dcode")) %>%
+  mutate(stu.need.high.pov = refdist.need.ed.pct * acs.poverty.5_17,
+         stu.need.high.pov = ifelse(stu.need.high.pov > stu.need.ed, stu.need.ed,stu.need.high.pov)) %>%
   
   mutate(adq.cost.base = stu.total.k12 * base.foundation,
          
          adq.cost.ed = stu.need.ed * base.foundation * 0.35,
          
-         # adq.cost.high.pov = stu.need.high.pov * base.foundation * 0.15,
+         adq.cost.high.pov = stu.need.high.pov * base.foundation * 0.15, # not included in total adequacy cost
          
          
          adq.cost.el.1 = (stu.need.el.wida.0_1.9 + stu.need.el.wida.2_2.9) * base.foundation * 0.7,
@@ -52,57 +52,42 @@ Adq_Data <-
          adq.cost.total.se = adq.cost.se.mild + adq.cost.se.mod + adq.cost.se.sev,
          
          # PK
-         stu.gsrp = isd.stu.gsrp * dist.isd.Age_3_4.pct, 
-         
-         stu.total = stu.total.k12 + stu.gsrp,
-         
-         Age_3_4_not.in.gsrp = Age_3_4 - stu.gsrp, 
-         Age_3_4_not.in.gsrp = ifelse(Age_3_4_not.in.gsrp < 1, 0, Age_3_4_not.in.gsrp), 
-         
-         adq.cost.pk.current = stu.gsrp * base.foundation * 1.45, 
-           
-         adq.cost.pk.expansion = Age_3_4_not.in.gsrp * universal.preschool.pct * base.foundation * 1.45, 
-         
-         adq.cost.pk = adq.cost.pk.current + adq.cost.pk.expansion, 
+         stu.gsrp = isd.stu.gsrp * dist.isd.Age_3_4.pct,
+        
+         adq.cost.pk = stu.grade.pk * base.foundation * 1.45, 
          
          
          # Adequacy Total 
          
          adq.cost.total            = adq.cost.base + adq.cost.ed + adq.cost.total.el + adq.cost.total.se + adq.cost.pk,
-         adq.cost.total.pk.current = adq.cost.total - adq.cost.pk.expansion, 
-         
+
          adq.rev                   = adq.cost.total + add.cost.total,
-         adq.rev.pk.current        = adq.cost.total.pk.current + add.cost.total,
-         
-         adq.rev.pp                = adq.rev / stu.total,
-         adq.rev.pp.pk.current     = adq.rev.pk.current / stu.total, 
-         
+
+         adq.rev.pp                = adq.rev / stu.total.pk12,
+
          actual.rev                = fid.r.total + dist.isd.ge.rev + dist.isd.se.rev,
-         actual.rev.pp             = actual.rev / stu.total,
+         actual.rev.pp             = actual.rev / stu.total.pk12,
          
          adq.gap                   = actual.rev - adq.rev,
-         adq.gap.pp                = adq.gap / stu.total,
-         adq.gap.pk.current        = actual.rev - adq.rev.pk.current,
-         adq.gap.pp.pk.current     = adq.gap.pk.current / stu.total,
-         
+         adq.gap.pp                = adq.gap / stu.total.pk12,
+
          adq.pct                   = actual.rev / adq.rev,
-         adq.pct.pk.current        = actual.rev/ adq.rev.pk.current
-         
+
          ) %>% 
   
   # cleaning
   select(-x) %>% 
   
-  mutate(stu.need.pct.ed = stu.need.ed / stu.total, 
-         stu.need.pct.se = stu.need.se / stu.total,
-         stu.need.pct.el = stu.need.el / stu.total,
-         stu.race.pct.black = stu.race.black / stu.total) %>% 
+  mutate(stu.need.pct.ed = stu.need.ed / stu.total.pk12, 
+         stu.need.pct.se = stu.need.se / stu.total.pk12,
+         stu.need.pct.el = stu.need.el / stu.total.pk12,
+         stu.race.pct.black = stu.race.black / stu.total.pk12) %>% 
   
   select(dcode, dname, icode, entity.type, locale.name, 
          adq.pct, adq.gap.pp, adq.gap, adq.rev, adq.rev.pp , actual.rev, actual.rev.pp, everything()) %>% 
   filter(entity.type != "ISD District",
          fid.r.total > 1,
-         stu.total > 1,
+         stu.total.pk12 > 1,
          !is.na(adq.rev)) 
 
 

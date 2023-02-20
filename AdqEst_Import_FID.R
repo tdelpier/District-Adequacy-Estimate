@@ -17,7 +17,8 @@ FID_Rev <-
   filter(FY == fiscal.year,
          fund %in% c(11, 22),
          suffix != 250,
-         remove != 1
+         remove != 1,
+         majorclass < 540 ##### 
          ) %>%   
   group_by(dnum, icode) %>% 
   summarise(fid.r.total = sum(amount))
