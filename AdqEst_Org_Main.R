@@ -6,6 +6,8 @@ library(here)
 i_am("flag_project_root.R")
 fiscal.year <- 2021
 base.foundation <- 10413
+universal.preschool.pct <- .8 * .5
+
 
 do <- function(r.file){
   source(here("Adequacy Estimates/District-Adequacy-Estimate",
@@ -28,12 +30,6 @@ do("AdqEst_DataWork_Add-Cost.R")
 do("AdqEst_DataWork_ISD-Rev.R")
 do("AdqEst_DataWork_Adq-Est.R")
 
-
-
-# total actual revenue should be around $21.4 billion
-
-Adq_Data %>% 
-  summarise(actual.rev = sum(actual.rev))
 
 
 

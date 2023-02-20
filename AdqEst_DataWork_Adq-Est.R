@@ -17,6 +17,14 @@ Adq_Data <-
   mutate(refdist.tot.need.ed = sum(stu.need.ed)) %>% 
   ungroup() %>% 
   mutate(refdist.need.ed.pct = stu.need.ed / refdist.tot.need.ed) %>% 
+  
+  group_by(icode) %>% 
+  mutate(isd.Age_3_4 = sum(Age_3_4)) %>% 
+  
+  ungroup() %>% 
+  
+  mutate(dist.isd.Age_3_4.pct = Age_3_4 / isd.Age_3_4) %>% 
+  
   # left_join(High_need_pov, by = c("refdist" = "dcode")) %>% 
   # mutate(stu.need.high.pov = refdist.need.ed.pct * acs.poverty.5_17,
   #        stu.need.high.pov = ifelse(stu.need.high.pov > stu.need.ed, stu.need.ed,stu.need.high.pov)) %>% 
@@ -44,15 +52,16 @@ Adq_Data <-
          adq.cost.total.se = adq.cost.se.mild + adq.cost.se.mod + adq.cost.se.sev,
          
          # PK
-         stu.gsrp = isd.stu.gsrp * dist.isd.pupil.pct, 
+         stu.gsrp = isd.stu.gsrp * dist.isd.Age_3_4.pct, 
          
          stu.total = stu.total.k12 + stu.gsrp,
          
          Age_3_4_not.in.gsrp = Age_3_4 - stu.gsrp, 
+         Age_3_4_not.in.gsrp = ifelse(Age_3_4_not.in.gsrp < 1, 0, Age_3_4_not.in.gsrp), 
          
          adq.cost.pk.current = stu.gsrp * base.foundation * 1.45, 
            
-         adq.cost.pk.expansion = Age_3_4_not.in.gsrp * 0.8 * base.foundation * 1.45, 
+         adq.cost.pk.expansion = Age_3_4_not.in.gsrp * universal.preschool.pct * base.foundation * 1.45, 
          
          adq.cost.pk = adq.cost.pk.current + adq.cost.pk.expansion, 
          
